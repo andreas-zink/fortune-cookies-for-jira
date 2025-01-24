@@ -1,11 +1,11 @@
 modules:
   jira:projectPage:
-    - key: fortune-cookie-jira-plugin-hello-world-project-page
+    - key: fortune-cookie-project-page
       resource: main
       resolver:
         function: resolver
       render: native
-      title: fortune-cookie-jira-plugin
+      title: Fortune Cookie
   function:
     - key: resolver
       handler: index.handler

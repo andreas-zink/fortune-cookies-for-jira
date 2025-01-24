@@ -3,14 +3,14 @@ import ForgeReconciler, { Text } from '@forge/react';
 import { invoke } from '@forge/bridge';
 
 const App = () => {
-  const [data, setData] = useState(null);
+  const [prophecy, setProphecy] = useState(null);
   useEffect(() => {
-    invoke('getText', { example: 'my-invoke-variable' }).then(setData);
+    invoke('generateProphecy', { example: 'my-invoke-variable' }).then(setProphecy);
   }, []);
   return (
     <>
-      <Text>Hello world!</Text>
-      <Text>{data ? data : 'Loading...'}</Text>
+      <Text>Your project prophecy:</Text>
+      <Text>{prophecy ? prophecy : 'Loading...'}</Text>
     </>
   );
 };
