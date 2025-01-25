@@ -1,14 +1,38 @@
 import Resolver from '@forge/resolver';
-import api, {route, fetch} from '@forge/api';
+import api, {storage, route, fetch} from '@forge/api';
 
 const resolver = new Resolver();
 
 resolver.define('getProphecy', async ({context}) => {
     //console.log(context);
     //console.log(context?.extension?.project);
-    const projectMetrics = await collectProjectMetrics(context?.extension?.project?.key);
-    return await requestProphecy(projectMetrics);
+    const projectKey = getProjectKeyFromContext(context);
+    let prophecy = await storage.get(getProphecyStoragekey(projectKey));
+    if (!prophecy) {
+        prophecy = await doGenerateProphecy(projectKey);
+    }
+    return prophecy;
 });
+
+resolver.define('generateProphecy', async ({context}) => {
+    const projectKey = getProjectKeyFromContext(context);
+    return doGenerateProphecy(projectKey);
+});
+
+const getProjectKeyFromContext = (context) => {
+    return context?.extension?.project?.key;
+}
+
+const getProphecyStoragekey = (projectKey) => {
+    return `${projectKey}-prophecy`;
+}
+
+const doGenerateProphecy = async (projectKey) => {
+    const prophecy = await collectProjectMetrics(projectKey)
+        .then(projectMetrics => requestProphecy(projectMetrics));
+    await storage.set(getProphecyStoragekey(projectKey), prophecy);
+    return prophecy;
+}
 
 const collectProjectMetrics = async (projectKey) => {
     console.log(`Collecting metrics for project ${projectKey}`)
