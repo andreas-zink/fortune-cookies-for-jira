@@ -1,5 +1,5 @@
 import Resolver from '@forge/resolver';
-import api, {route} from '@forge/api';
+import api, {route, fetch} from '@forge/api';
 
 const resolver = new Resolver();
 
@@ -68,34 +68,71 @@ const getIssueTypeMetrics = async (projectKey, issueType) => {
     // issuetype = {types}
     // statusCategory = "To Do"=2, "In Progress"=3, "Done"=4
     // created >= -30d
-    const [open, openRecent, inProgress, inProgressRecent, done, doneRecent] = await Promise.all([
-        getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=2 AND created >= -30d`),
-        getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=2 AND created >= -7d`),
-        getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=3 AND updated >= -30d`),
+    const [open, inProgress, done] = await Promise.all([
+        getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=2 AND updated >= -7d`),
         getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=3 AND updated >= -7d`),
-        getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=4 AND resolved >= -30d`),
         getApproximateIssueCount(`project=${projectKey} AND issuetype = ${issueType.name} AND statusCategory=4 AND resolved >= -7d`),
     ]);
     return {
         open,
-        openRecent,
-        openRecentRate: computeRate(openRecent, open),
         inProgress,
-        inProgressRecent,
-        inProgressRecentRate: computeRate(inProgressRecent, inProgress),
         done,
-        doneRecent,
-        doneRecentRate: computeRate(doneRecent, done),
     };
 }
 
-const computeRate = (countRecent, count) => {
-    return count === 0 ? 0 : countRecent / count;
+const requestProphecy = async (projectMetrics) => {
+    console.log(`Requesting prophecy for project ${projectMetrics.projectKey}`);
+
+    const body = {
+        model: 'gpt-4o-mini',
+        messages: [
+            {
+                "role": "developer",
+                "content": `Write a fortune cookie prophecy for a Jira project and consider the following rules:
+                    - Approximately 10 words but max 20 words.
+                    - Use the given project type as context for wording, humor, topics, etc. For example project type 'software' should result in stereotypical wording for software developers.
+                    - You can, but don't have to, use the given issue metrics. They contain the project's type of issues with name and description. They also contain the amount of issues by state 'open', 'in progress' and 'done'. For example, having many bugs can lead to a dark prophecy.`
+            },
+            {
+                "role": "user",
+                "content": `${JSON.stringify(projectMetrics)}`
+            }
+        ]
+    };
+
+    const options = {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${getOpenAPIKey()}`,
+            'Content-Type': 'application/json',
+        },
+        redirect: 'follow',
+        body: JSON.stringify(body)
+    };
+
+    const response = await fetch(`https://api.openai.com/v1/chat/completions`, options);
+    let result = ''
+
+    if (response.status === 200) {
+        const chatCompletion = await response.json();
+        const firstChoice = chatCompletion.choices[0]
+
+        if (firstChoice) {
+            result = firstChoice.message.content;
+        } else {
+            console.warn(`Chat completion response did not include any assistance choices.`);
+            result = `AI response did not include any choices.`;
+        }
+    } else {
+        const text = await response.text();
+        result = text;
+    }
+
+    return result;
 }
 
-const requestProphecy = async (projectMetrics) => {
-    console.log(`Requesting prophecy`);
-    return "With every open bug ticket lies an opportunity: Fixing them will clear the path to seamless integration.";
+const getOpenAPIKey = () => {
+    return process.env.OPEN_API_KEY;
 }
 
 export const handler = resolver.getDefinitions();

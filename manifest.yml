@@ -19,3 +19,7 @@ app:
 permissions:
   scopes:
     - read:jira-work
+  external:
+    fetch:
+      backend:
+        - 'api.openai.com'
