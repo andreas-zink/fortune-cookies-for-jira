@@ -1,17 +1,19 @@
 import Resolver from '@forge/resolver';
-import api, {storage, route, fetch} from '@forge/api';
+import api, {fetch, route, storage} from '@forge/api';
 
+const prophecyLimit = 100;
+const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
 const resolver = new Resolver();
 
 resolver.define('getProphecy', async ({context}) => {
     // console.log(context);
     // console.log(context?.extension);
     const projectKey = getProjectKeyFromContext(context);
-    let prophecy = await storage.get(getProphecyStoragekey(projectKey));
-    if (!prophecy) {
-        prophecy = await doGenerateProphecy(projectKey);
+    const prophecyContext = await getProphecyContext(projectKey);
+    if (!prophecyContext?.prophecy) {
+        return await doGenerateProphecy(projectKey);
     }
-    return prophecy;
+    return prophecyContext?.prophecy;
 });
 
 resolver.define('generateProphecy', async ({context}) => {
@@ -19,22 +21,61 @@ resolver.define('generateProphecy', async ({context}) => {
     return doGenerateProphecy(projectKey);
 });
 
-const getProjectKeyFromContext = (context) => {
+function getProjectKeyFromContext(context) {
     return context?.extension?.project?.key;
 }
 
-const getProphecyStoragekey = (projectKey) => {
+function getProphecyContext(projectKey) {
+    return storage.get(getProphecyStoragekey(projectKey));
+}
+
+function setProphecyContext(projectKey, prophecyContext) {
+    return storage.set(getProphecyStoragekey(projectKey), prophecyContext);
+}
+
+function getProphecyStoragekey(projectKey) {
     return `${projectKey}-prophecy`;
 }
 
-const doGenerateProphecy = async (projectKey) => {
-    const prophecy = await collectProjectMetrics(projectKey)
-        .then(projectMetrics => requestProphecy(projectMetrics));
-    await storage.set(getProphecyStoragekey(projectKey), prophecy);
-    return prophecy;
+async function doGenerateProphecy(projectKey) {
+    const prophecyContext = await getProphecyContext(projectKey) ?? {
+        prophecy: null,
+        timestamp: getLocalDateEpochMillis(),
+        counter: 0
+    }
+    resetCounterOnNextDay(prophecyContext);
+
+    if (hasNotReachedProphecyLimit(prophecyContext)) {
+        prophecyContext.prophecy = await collectProjectMetrics(projectKey)
+            .then(projectMetrics => requestProphecy(projectMetrics));
+        prophecyContext.counter++
+    } else {
+        prophecyContext.prophecy = limitReachedProphecy;
+    }
+    await setProphecyContext(projectKey, prophecyContext);
+    return prophecyContext.prophecy;
 }
 
-const collectProjectMetrics = async (projectKey) => {
+function resetCounterOnNextDay(prophecyContext) {
+    const today = getLocalDateEpochMillis();
+    if (prophecyContext.timestamp < today) {
+        prophecyContext.timestamp = today;
+        prophecyContext.counter = 0;
+    }
+}
+
+function hasNotReachedProphecyLimit(prophecyContext) {
+    return prophecyContext.counter < prophecyLimit;
+}
+
+function getLocalDateEpochMillis(){
+    let date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date.getTime();
+}
+
+
+async function collectProjectMetrics(projectKey) {
     console.log(`Collecting metrics for project ${projectKey}`)
     const project = await getProject(projectKey);
     //console.log(project);
@@ -54,7 +95,7 @@ const collectProjectMetrics = async (projectKey) => {
     return projectMetrics;
 }
 
-const getProject = async (projectKey) => {
+async function getProject(projectKey){
     return await api.asApp().requestJira(route`/rest/api/3/project/${projectKey}`, {
         headers: {
             'Accept': 'application/json'
@@ -62,7 +103,7 @@ const getProject = async (projectKey) => {
     }).then(response => response.json());
 }
 
-const getApproximateIssueCount = async (jql) => {
+async function getApproximateIssueCount(jql){
     return await api.asApp().requestJira(route`/rest/api/3/search/approximate-count`, {
         method: 'POST',
         headers: {
@@ -75,7 +116,7 @@ const getApproximateIssueCount = async (jql) => {
         .then(json => json.count);
 }
 
-const getIssueMetrics = async (projectKey, issueTypes) => {
+async function getIssueMetrics(projectKey, issueTypes){
     const promises = issueTypes.map(issueType =>
         getIssueTypeMetrics(projectKey, issueType)
     );
@@ -87,7 +128,7 @@ const getIssueMetrics = async (projectKey, issueTypes) => {
     return mergedResults;
 }
 
-const getIssueTypeMetrics = async (projectKey, issueType) => {
+async function getIssueTypeMetrics(projectKey, issueType) {
     // project = {project.key}
     // issuetype = {types}
     // statusCategory = "To Do"=2, "In Progress"=3, "Done"=4
@@ -104,7 +145,7 @@ const getIssueTypeMetrics = async (projectKey, issueType) => {
     };
 }
 
-const requestProphecy = async (projectMetrics) => {
+async function requestProphecy(projectMetrics){
     console.log(`Requesting prophecy for project ${projectMetrics.projectKey}`);
 
     const body = {
@@ -155,7 +196,7 @@ const requestProphecy = async (projectMetrics) => {
     return result;
 }
 
-const getOpenAPIKey = () => {
+function getOpenAPIKey()  {
     return process.env.OPEN_API_KEY;
 }
 

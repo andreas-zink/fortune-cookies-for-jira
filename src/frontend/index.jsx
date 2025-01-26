@@ -36,7 +36,7 @@ const App = () => {
                 {isModalOpen && (
                 <Modal shouldScrollInViewport="false" onClose={() => view.close()} >
                     <ModalHeader>
-                        <ModalTitle>Your prophecy</ModalTitle>
+                        <ModalTitle>Your project prophecy</ModalTitle>
                     </ModalHeader>
                     <ModalBody>
                         <Inline>
@@ -49,7 +49,7 @@ const App = () => {
                     <ModalFooter>
                         <ButtonGroup>
                             <Button onClick={generateProphecyBtnClicked}>Next</Button>
-                            <Button appearance="primary" onClick={handleCloseModal}>Close</Button>
+                            <Button onClick={handleCloseModal}>Close</Button>
                         </ButtonGroup>
                     </ModalFooter>
                 </Modal>
