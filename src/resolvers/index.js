@@ -4,8 +4,8 @@ import api, {storage, route, fetch} from '@forge/api';
 const resolver = new Resolver();
 
 resolver.define('getProphecy', async ({context}) => {
-    //console.log(context);
-    //console.log(context?.extension?.project);
+    // console.log(context);
+    // console.log(context?.extension);
     const projectKey = getProjectKeyFromContext(context);
     let prophecy = await storage.get(getProphecyStoragekey(projectKey));
     if (!prophecy) {

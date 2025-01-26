@@ -1,9 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import ForgeReconciler, {Stack, Inline, Text, Em, ButtonGroup, Button,Icon, SectionMessage, SectionMessageAction} from '@forge/react';
-import {Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader} from '@forge/react';
-import { view, showFlag } from '@forge/bridge';
-
-import {invoke} from '@forge/bridge';
+import ForgeReconciler, {
+    Button,
+    ButtonGroup,
+    Em, Inline,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    ModalTitle,
+    ModalTransition, Spinner,
+    Text,
+} from '@forge/react';
+import {invoke, view} from '@forge/bridge';
 
 const App = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
@@ -14,6 +22,7 @@ const App = () => {
     }, []);
 
     const generateProphecyBtnClicked = () => {
+        setProphecy(null);
         invoke('generateProphecy').then(setProphecy);
     };
 
@@ -25,16 +34,21 @@ const App = () => {
         <>
             <ModalTransition>
                 {isModalOpen && (
-                <Modal onClose={() => view.close()} >
+                <Modal shouldScrollInViewport="false" onClose={() => view.close()} >
                     <ModalHeader>
                         <ModalTitle>Your prophecy</ModalTitle>
                     </ModalHeader>
                     <ModalBody>
-                        <Text><Em>{prophecy ? prophecy : 'Loading...'}</Em></Text>
+                        <Inline>
+                            {!prophecy && (
+                                <Spinner label="loading" />
+                            )}
+                            <Text><Em>{prophecy}</Em></Text>
+                        </Inline>
                     </ModalBody>
                     <ModalFooter>
                         <ButtonGroup>
-                            <Button onClick={generateProphecyBtnClicked}>Open cookie</Button>
+                            <Button onClick={generateProphecyBtnClicked}>Next</Button>
                             <Button appearance="primary" onClick={handleCloseModal}>Close</Button>
                         </ButtonGroup>
                     </ModalFooter>
