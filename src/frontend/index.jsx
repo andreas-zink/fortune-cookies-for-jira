@@ -48,7 +48,7 @@ const App = () => {
                     </ModalBody>
                     <ModalFooter>
                         <ButtonGroup>
-                            <Button onClick={generateProphecyBtnClicked}>Next</Button>
+                            <Button onClick={generateProphecyBtnClicked} iconBefore="premium">Next</Button>
                             <Button onClick={handleCloseModal}>Close</Button>
                         </ButtonGroup>
                     </ModalFooter>

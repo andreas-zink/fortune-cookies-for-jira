@@ -1,7 +1,7 @@
 modules:
   jira:backlogAction:
     - key: fortune-cookie-backlog-action
-      title: Fortune Cookie
+      title: Open fortune cookie
       icon: resource:svgs;fortune-cookie.svg
       resource: main
       render: native
@@ -10,7 +10,7 @@ modules:
       actionType: dynamic
   jira:boardAction:
     - key: fortune-cookie-board-action
-      title: Fortune Cookie
+      title: Open fortune cookie
       icon: resource:svgs;fortune-cookie.svg
       resource: main
       render: native
