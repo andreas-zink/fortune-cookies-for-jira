@@ -1,8 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import ForgeReconciler, {Text, Box, Button, xcss} from '@forge/react';
+import ForgeReconciler, {Stack, Inline, Text, Em, ButtonGroup, Button,Icon, SectionMessage, SectionMessageAction} from '@forge/react';
+import {Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader} from '@forge/react';
+import { view, showFlag } from '@forge/bridge';
+
 import {invoke} from '@forge/bridge';
 
 const App = () => {
+    const [isModalOpen, setIsModalOpen] = useState(true);
     const [prophecy, setProphecy] = useState(null);
 
     useEffect(() => {
@@ -13,13 +17,30 @@ const App = () => {
         invoke('generateProphecy').then(setProphecy);
     };
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
     return (
         <>
-            <Text>Your project prophecy:</Text>
-            <Box padding='space.400' backgroundColor='color.background.accent.yellow.subtlest'>
-                <Text>{prophecy ? prophecy : 'Loading...'}</Text>
-            </Box>
-            <Button onClick={generateProphecyBtnClicked}>Next</Button>
+            <ModalTransition>
+                {isModalOpen && (
+                <Modal onClose={() => view.close()} >
+                    <ModalHeader>
+                        <ModalTitle>Your prophecy</ModalTitle>
+                    </ModalHeader>
+                    <ModalBody>
+                        <Text><Em>{prophecy ? prophecy : 'Loading...'}</Em></Text>
+                    </ModalBody>
+                    <ModalFooter>
+                        <ButtonGroup>
+                            <Button onClick={generateProphecyBtnClicked}>Open cookie</Button>
+                            <Button appearance="primary" onClick={handleCloseModal}>Close</Button>
+                        </ButtonGroup>
+                    </ModalFooter>
+                </Modal>
+                    )}
+            </ModalTransition>
         </>
     );
 };

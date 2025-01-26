@@ -1,17 +1,30 @@
 modules:
-  jira:projectPage:
-    - key: fortune-cookie-project-page
+  jira:backlogAction:
+    - key: fortune-cookie-backlog-action
+      title: Fortune Cookie
+      icon: resource:svgs;fortune-cookie.svg
       resource: main
+      render: native
       resolver:
         function: resolver
-      render: native
+      actionType: dynamic
+  jira:boardAction:
+    - key: fortune-cookie-board-action
       title: Fortune Cookie
+      icon: resource:svgs;fortune-cookie.svg
+      resource: main
+      render: native
+      resolver:
+        function: resolver
+      actionType: dynamic
   function:
     - key: resolver
       handler: index.handler
 resources:
   - key: main
     path: src/frontend/index.jsx
+  - key: svgs
+    path: src/resources/svgs
 app:
   runtime:
     name: nodejs22.x
