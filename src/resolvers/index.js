@@ -5,24 +5,29 @@ const prophecyLimit = 100;
 const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
 const resolver = new Resolver();
 
-resolver.define('getProphecy', async ({context}) => {
-    // console.log(context);
-    // console.log(context?.extension);
-    const projectKey = getProjectKeyFromContext(context);
+resolver.define('getProphecy', async (request) => {
+    // console.log(request);
+    const locale = getLocaleFromRequest(request);
+    const projectKey = getProjectKeyFromRequest(request);
     const prophecyContext = await getProphecyContext(projectKey);
     if (!prophecyContext?.prophecy) {
-        return await doGenerateProphecy(projectKey);
+        return await doGenerateProphecy(projectKey, locale);
     }
     return prophecyContext?.prophecy;
 });
 
-resolver.define('generateProphecy', async ({context}) => {
-    const projectKey = getProjectKeyFromContext(context);
-    return doGenerateProphecy(projectKey);
+resolver.define('generateProphecy', async (request) => {
+    // console.log(request);
+    const locale = getLocaleFromRequest(request);
+    const projectKey = getProjectKeyFromRequest(request);
+    return doGenerateProphecy(projectKey, locale);
 });
 
-function getProjectKeyFromContext(context) {
-    return context?.extension?.project?.key;
+function getProjectKeyFromRequest(request) {
+    return request?.context?.extension?.project?.key;
+}
+function getLocaleFromRequest(request) {
+    return request?.payload?.locale ?? 'en-US';
 }
 
 function getProphecyContext(projectKey) {
@@ -37,9 +42,10 @@ function getProphecyStoragekey(projectKey) {
     return `${projectKey}-prophecy`;
 }
 
-async function doGenerateProphecy(projectKey) {
+async function doGenerateProphecy(projectKey, locale) {
     const prophecyContext = await getProphecyContext(projectKey) ?? {
         prophecy: null,
+        locale: locale,
         timestamp: getLocalDateEpochMillis(),
         counter: 0
     }
@@ -47,7 +53,7 @@ async function doGenerateProphecy(projectKey) {
 
     if (hasNotReachedProphecyLimit(prophecyContext)) {
         prophecyContext.prophecy = await collectProjectMetrics(projectKey)
-            .then(projectMetrics => requestProphecy(projectMetrics));
+            .then(projectMetrics => requestProphecy(projectMetrics, locale));
         prophecyContext.counter++
     } else {
         prophecyContext.prophecy = limitReachedProphecy;
@@ -145,9 +151,9 @@ async function getIssueTypeMetrics(projectKey, issueType) {
     };
 }
 
-async function requestProphecy(projectMetrics){
+async function requestProphecy(projectMetrics, locale){
     console.log(`Requesting prophecy for project ${projectMetrics.projectKey}`);
-
+    projectMetrics.locale = locale;
     const body = {
         model: 'gpt-4o-mini',
         messages: [
@@ -155,6 +161,7 @@ async function requestProphecy(projectMetrics){
                 "role": "developer",
                 "content": `Write a fortune cookie prophecy for a Jira project and consider the following rules:
                     - Approximately 10 words but max 20 words.
+                    - Answer in the given locale
                     - Use the given project type as context for wording, humor, topics, etc. For example project type 'software' should result in stereotypical wording for software developers.
                     - You can, but don't have to, use the given issue metrics. They contain the project's type of issues with name and description. They also contain the amount of issues by state 'open', 'in progress' and 'done'. For example, having many bugs can lead to a dark prophecy.`
             },

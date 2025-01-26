@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ForgeReconciler, {
+    useProductContext,
     Button,
     ButtonGroup,
     Em, Inline,
@@ -14,16 +15,17 @@ import ForgeReconciler, {
 import {invoke, view} from '@forge/bridge';
 
 const App = () => {
+    const context = useProductContext();
     const [isModalOpen, setIsModalOpen] = useState(true);
     const [prophecy, setProphecy] = useState(null);
 
     useEffect(() => {
-        invoke('getProphecy').then(setProphecy);
-    }, []);
+        invoke('getProphecy', context).then(setProphecy);
+    }, [context]);
 
     const generateProphecyBtnClicked = () => {
         setProphecy(null);
-        invoke('generateProphecy').then(setProphecy);
+        invoke('generateProphecy', context).then(setProphecy);
     };
 
     const handleCloseModal = () => {
