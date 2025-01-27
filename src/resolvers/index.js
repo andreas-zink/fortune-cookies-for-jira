@@ -18,7 +18,8 @@ resolver.define('getProphecy', async (request) => {
 resolver.define('generateProphecy', async (request) => {
     // console.log(request);
     const projectKey = getProjectKeyFromRequest(request);
-    return newProphecy(projectKey);
+    const activeLicense = getLicenseStateFromRequest(request);
+    return newProphecy(projectKey, activeLicense);
 });
 
 resolver.define('reset', async (request) => {
@@ -32,6 +33,12 @@ resolver.define('isDevEnv', async () => {
 
 function getProjectKeyFromRequest(request) {
     return request?.context?.extension?.project?.key;
+}
+
+function getLicenseStateFromRequest(request) {
+    const licenseState = request?.context?.license?.isActive;
+    console.log(`License is ${licenseState ? 'active' : 'inactive'}`);
+    return licenseState;
 }
 
 export const handler = resolver.getDefinitions();

@@ -35,6 +35,8 @@ app:
   runtime:
     name: nodejs22.x
   id: ari:cloud:ecosystem::app/dcaf209a-2091-4ab2-9b8c-3a8a95b98d4d
+  licensing:
+    enabled: true
 permissions:
   scopes:
     - storage:app

@@ -25,9 +25,9 @@ export async function clearAll() {
     const keys = [];
     await queryStorge(null).then(listResult => {
         listResult.results.forEach(entry => keys.push(entry.key));
-        if(listResult.nextCursor){
+        if (listResult.nextCursor) {
             return queryStorge(listResult.nextCursor);
-        }else{
+        } else {
             return Promise.resolve();
         }
     });
@@ -39,9 +39,9 @@ export async function clearAll() {
     await Promise.all(promises);
 }
 
-function queryStorge(cursor){
+function queryStorge(cursor) {
     const queryBuilder = storage.query();
-    if(cursor){
+    if (cursor) {
         queryBuilder.cursor(cursor);
     }
     return queryBuilder.getMany();
@@ -60,7 +60,7 @@ export const newProphecyContext = () => {
     };
 }
 
-export function setProphecy(context, prophecy) {
+export function setProphecyInContext(context, prophecy) {
     context.prophecy = prophecy;
     context.history.push(prophecy);
     if (context.history > 3) {
@@ -69,7 +69,7 @@ export function setProphecy(context, prophecy) {
     context.counter++;
 }
 
-export function resetCounterOnNextDay(context){
+export function resetCounterOnNextDay(context) {
     const today = getLocalDateEpochMillis();
     if (context.timestamp < today) {
         context.history = [];
@@ -78,6 +78,6 @@ export function resetCounterOnNextDay(context){
     }
 }
 
-export function hasNotReachedProphecyLimit(context) {
-    return context.counter < prophecyLimit;
+export function exceededLimit(context) {
+    return context.counter >= prophecyLimit;
 }

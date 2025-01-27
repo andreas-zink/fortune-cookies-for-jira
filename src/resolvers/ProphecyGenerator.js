@@ -1,28 +1,31 @@
 import {
-    hasNotReachedProphecyLimit,
+    exceededLimit,
     loadProphecyContext,
     newProphecyContext,
     resetCounterOnNextDay,
-    setProphecy,
+    setProphecyInContext,
     storeProphecyContext
 } from "./ProphecyContext";
 import {getProjectMetrics} from "./ProjectAnalyzer";
 import {chat} from "./OpenAiClient";
 
+const inactiveLicenseProphecy = `"Your fortune remains locked behind the door of opportunity. To unlock the wisdom of the cookie, activate your license.`
 const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
 const errorProphecy = `"Oops! Something went wrong with your fortune today. But fear not — every setback is a setup for a comeback."`
 
-export async function newProphecy(projectKey) {
+export async function newProphecy(projectKey, activeLicense) {
     try {
         const prophecyContext = await loadProphecyContext(projectKey) ?? newProphecyContext()
         resetCounterOnNextDay(prophecyContext);
 
-        if (hasNotReachedProphecyLimit(prophecyContext)) {
+        if (!activeLicense) {
+            prophecyContext.prophecy = inactiveLicenseProphecy;
+        } else if (exceededLimit(prophecyContext)) {
+            prophecyContext.prophecy = limitReachedProphecy;
+        } else {
             const prophecy = await getProjectMetrics(projectKey)
                 .then(projectMetrics => requestProphecy(projectMetrics, prophecyContext?.history)) ?? errorProphecy;
-            setProphecy(prophecyContext, prophecy)
-        } else {
-            prophecyContext.prophecy = limitReachedProphecy;
+            setProphecyInContext(prophecyContext, prophecy);
         }
         await storeProphecyContext(projectKey, prophecyContext);
         return prophecyContext.prophecy;
