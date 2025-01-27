@@ -25,9 +25,9 @@ const App = () => {
         invoke('isDevEnv').then(setIsDevEnv);
     }, [context]);
 
-    const generateProphecyBtnClicked = () => {
+    const getNextProphecyBtnClicked = () => {
         setProphecy(null);
-        invoke('generateProphecy', context).then(setProphecy);
+        invoke('getNextProphecy', context).then(setProphecy);
     };
 
     const resetBtnClicked = () => {
@@ -59,7 +59,7 @@ const App = () => {
                                 {isDevEnv && (
                                     <Button onClick={resetBtnClicked} type='reset' appearance='warning'>Reset</Button>
                                 )}
-                                <Button onClick={generateProphecyBtnClicked} type='submit' iconBefore="premium">Next</Button>
+                                <Button onClick={getNextProphecyBtnClicked} type='submit' iconBefore="premium">Next</Button>
                                 <Button onClick={handleCloseModal} autoFocus='true'>Close</Button>
                             </ButtonGroup>
                         </ModalFooter>

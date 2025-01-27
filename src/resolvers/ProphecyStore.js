@@ -1,13 +1,25 @@
 import {storage} from "@forge/api";
 
-const prophecyLimit = 100;
-
-export function loadProphecyContext(projectKey) {
-    return storage.get(getProphecyStoragekey(projectKey));
+export async function loadProphecyContext(projectKey) {
+    return await storage.get(getProphecyStoragekey(projectKey)) ?? newProphecyContext();
 }
 
 export function storeProphecyContext(projectKey, prophecyContext) {
     return storage.set(getProphecyStoragekey(projectKey), prophecyContext);
+}
+
+export function updateProphecyContext(projectKey, prophecyContext, prophecy) {
+    setProphecy(prophecyContext, prophecy);
+    return storage.set(getProphecyStoragekey(projectKey), prophecyContext);
+}
+
+function setProphecy(context, prophecy) {
+    context.prophecy = prophecy;
+    context.history.push(prophecy);
+    if (context.history > 3) {
+        context.history.shift();
+    }
+    context.counter++;
 }
 
 export function clearProphecyContext(projectKey) {
@@ -33,6 +45,15 @@ export async function clearAll() {
     await Promise.all(promises);
 }
 
+export function resetProphecyContextOnNextDay(context) {
+    const today = getLocalDateEpochMillis();
+    if (context.timestamp < today) {
+        context.history = [];
+        context.timestamp = today;
+        context.counter = 0;
+    }
+}
+
 function queryStorge(cursor) {
     const queryBuilder = storage.query();
     if (cursor) {
@@ -45,35 +66,13 @@ function getProphecyStoragekey(projectKey) {
     return `${projectKey}-prophecy`;
 }
 
-export const newProphecyContext = () => {
+const newProphecyContext = () => {
     return {
         prophecy: null,
         history: [],
         timestamp: getLocalDateEpochMillis(),
         counter: 0
     };
-}
-
-export function setProphecyInContext(context, prophecy) {
-    context.prophecy = prophecy;
-    context.history.push(prophecy);
-    if (context.history > 3) {
-        context.history.shift();
-    }
-    context.counter++;
-}
-
-export function resetCounterOnNextDay(context) {
-    const today = getLocalDateEpochMillis();
-    if (context.timestamp < today) {
-        context.history = [];
-        context.timestamp = today;
-        context.counter = 0;
-    }
-}
-
-export function exceededLimit(context) {
-    return context.counter >= prophecyLimit;
 }
 
 function getLocalDateEpochMillis() {

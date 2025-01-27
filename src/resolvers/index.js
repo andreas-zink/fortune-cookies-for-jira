@@ -1,7 +1,7 @@
 import Resolver from '@forge/resolver';
 import {getAppContext} from "@forge/api";
 import {clearAll, clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
-import {newProphecy} from "./ProphecyGenerator";
+import {generateProphecy} from "./ProphecyGenerator";
 
 const resolver = new Resolver();
 
@@ -12,14 +12,14 @@ resolver.define('getProphecy', async (request) => {
     if (prophecyContext?.prophecy) {
         return prophecyContext.prophecy;
     }
-    return await newProphecy(projectKey);
+    return await generateProphecy(projectKey);
 });
 
-resolver.define('generateProphecy', async (request) => {
+resolver.define('getNextProphecy', async (request) => {
     // console.log(request);
     const projectKey = getProjectKeyFromRequest(request);
     const activeLicense = getLicenseStateFromRequest(request);
-    return newProphecy(projectKey, activeLicense);
+    return generateProphecy(projectKey, activeLicense);
 });
 
 resolver.define('reset', async (request) => {
@@ -44,10 +44,10 @@ function getLicenseStateFromRequest(request) {
 export const handler = resolver.getDefinitions();
 
 export const cleanup = async ({context}) => {
-    console.log('Cleaning');
+    console.log('Triggered weekly cleanup');
     try {
         await clearAll();
     } catch (error) {
-        console.warn(`Exception while cleaning: ${error}`);
+        console.warn(`Exception while cleanup: ${error}`);
     }
 }

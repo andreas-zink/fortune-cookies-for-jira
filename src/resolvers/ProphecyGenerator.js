@@ -1,43 +1,45 @@
-import {
-    exceededLimit,
-    loadProphecyContext,
-    newProphecyContext,
-    resetCounterOnNextDay,
-    setProphecyInContext,
-    storeProphecyContext
-} from "./ProphecyStore";
+import {loadProphecyContext, resetProphecyContextOnNextDay, updateProphecyContext} from "./ProphecyStore";
 import {getProjectMetrics} from "./ProjectAnalyzer";
 import {chat} from "./OpenAiClient";
 
+const prophecyLimit = 100;
 const inactiveLicenseProphecy = `"Your fortune remains locked behind the door of opportunity. To unlock the wisdom of the cookie, activate your license.`
 const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
 const errorProphecy = `"Oops! Something went wrong with your fortune today. But fear not — every setback is a setup for a comeback."`
 
-export async function newProphecy(projectKey, activeLicense) {
+export async function generateProphecy(projectKey, activeLicense) {
     try {
-        const prophecyContext = await loadProphecyContext(projectKey) ?? newProphecyContext()
-        resetCounterOnNextDay(prophecyContext);
+        const prophecyContext = await loadProphecyContext(projectKey);
+        resetProphecyContextOnNextDay(prophecyContext);
 
         if (!activeLicense) {
-            prophecyContext.prophecy = inactiveLicenseProphecy;
-        } else if (exceededLimit(prophecyContext)) {
-            prophecyContext.prophecy = limitReachedProphecy;
+            console.log("Won't generate any prophecies without active license");
+            return inactiveLicenseProphecy;
+        } else if (isCounterExhausted(prophecyContext)) {
+            console.log(`Won't generate new prophecies for ${projectKey} until tomorrow`);
+            return limitReachedProphecy;
         } else {
-            const prophecy = await getProjectMetrics(projectKey)
-                .then(projectMetrics => requestProphecy(projectMetrics, prophecyContext?.history)) ?? errorProphecy;
-            setProphecyInContext(prophecyContext, prophecy);
+            const projectMetrics = await getProjectMetrics(projectKey);
+            const prophecy = await requestProphecy(projectMetrics, prophecyContext.history);
+            if (!prophecy) {
+                return errorProphecy;
+            }
+            await updateProphecyContext(projectKey, prophecyContext, prophecy);
+            return prophecy;
         }
-        await storeProphecyContext(projectKey, prophecyContext);
-        return prophecyContext.prophecy;
     } catch (error) {
         console.warn(`Exception while generating new prophecy: ${error}`);
         return errorProphecy;
     }
 }
 
+function isCounterExhausted(context) {
+    return context.counter >= prophecyLimit;
+}
+
 async function requestProphecy(projectMetrics, prophecyHistory) {
     console.log(`Requesting prophecy for project ${projectMetrics.projectKey}`);
-    projectMetrics.requestTimestamp = new Date().toISOString();
+    enrichProjectMetrics(projectMetrics);
     const messages = [
         {
             "role": "developer",
@@ -55,6 +57,15 @@ async function requestProphecy(projectMetrics, prophecyHistory) {
             "content": `${JSON.stringify(projectMetrics)}`
         }
     ]
+    enrichMessagesWithHistory(messages, prophecyHistory);
+    return await chat(messages);
+}
+
+function enrichProjectMetrics(projectMetrics) {
+    projectMetrics.requestTimestamp = new Date().toISOString();
+}
+
+function enrichMessagesWithHistory(messages, prophecyHistory) {
     if (prophecyHistory && Array.isArray(prophecyHistory) && prophecyHistory.length > 0) {
         for (let i = 0; i < 3; i++) {
             messages.push({
@@ -67,5 +78,4 @@ async function requestProphecy(projectMetrics, prophecyHistory) {
             "content": "Another one please",
         })
     }
-    return await chat(messages);
 }
