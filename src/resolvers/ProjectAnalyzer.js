@@ -9,7 +9,7 @@ export async function getProjectMetrics(projectKey) {
         projectType: project?.projectTypeKey,
         issueTypeMetrics: await getIssueTypeMetrics(projectKey, project),
     };
-    console.log(JSON.stringify(projectMetrics, null, 2));
+    console.log(`Collected project metrics: ${JSON.stringify(projectMetrics, null, 2)}`);
     return projectMetrics;
 }
 
