@@ -18,9 +18,11 @@ const App = () => {
     const context = useProductContext();
     const [isModalOpen, setIsModalOpen] = useState(true);
     const [prophecy, setProphecy] = useState(null);
+    const [isDevEnv, setIsDevEnv] = useState(false);
 
     useEffect(() => {
         invoke('getProphecy', context).then(setProphecy);
+        invoke('isDevEnv').then(setIsDevEnv);
     }, [context]);
 
     const generateProphecyBtnClicked = () => {
@@ -28,8 +30,8 @@ const App = () => {
         invoke('generateProphecy', context).then(setProphecy);
     };
 
-    const clearProphecyBtnClicked = () => {
-        invoke('clearProphecyContext', context).then( );
+    const resetBtnClicked = () => {
+        invoke('reset', context).then();
     };
 
     const handleCloseModal = () => {
@@ -40,27 +42,29 @@ const App = () => {
         <>
             <ModalTransition>
                 {isModalOpen && (
-                <Modal shouldScrollInViewport="false" onClose={() => view.close()} >
-                    <ModalHeader>
-                        <ModalTitle>Your project prophecy</ModalTitle>
-                    </ModalHeader>
-                    <ModalBody>
-                        <Inline>
-                            {!prophecy && (
-                                <Spinner label="loading" />
-                            )}
-                            <Text><Em>{prophecy}</Em></Text>
-                        </Inline>
-                    </ModalBody>
-                    <ModalFooter>
-                        <ButtonGroup>
-                            <Button onClick={clearProphecyBtnClicked}>Clear</Button>
-                            <Button onClick={generateProphecyBtnClicked} iconBefore="premium">Next</Button>
-                            <Button onClick={handleCloseModal}>Close</Button>
-                        </ButtonGroup>
-                    </ModalFooter>
-                </Modal>
-                    )}
+                    <Modal shouldScrollInViewport="false" onClose={() => view.close()}>
+                        <ModalHeader>
+                            <ModalTitle>Your project prophecy</ModalTitle>
+                        </ModalHeader>
+                        <ModalBody>
+                            <Inline>
+                                {!prophecy && (
+                                    <Spinner label="loading"/>
+                                )}
+                                <Text><Em>{prophecy}</Em></Text>
+                            </Inline>
+                        </ModalBody>
+                        <ModalFooter>
+                            <ButtonGroup>
+                                {isDevEnv && (
+                                    <Button onClick={resetBtnClicked} type='reset' appearance='warning'>Reset</Button>
+                                )}
+                                <Button onClick={generateProphecyBtnClicked} iconBefore="premium">Next</Button>
+                                <Button onClick={handleCloseModal}>Close</Button>
+                            </ButtonGroup>
+                        </ModalFooter>
+                    </Modal>
+                )}
             </ModalTransition>
         </>
     );
