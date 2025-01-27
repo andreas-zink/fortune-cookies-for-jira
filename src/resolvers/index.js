@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
-import { getAppContext } from "@forge/api";
-import {clearProphecyContext, loadProphecyContext,} from './ProphecyContext';
+import {getAppContext} from "@forge/api";
+import {clearAll, clearProphecyContext, loadProphecyContext,} from './ProphecyContext';
 import {newProphecy} from "./ProphecyGenerator";
 
 const resolver = new Resolver();
@@ -35,3 +35,12 @@ function getProjectKeyFromRequest(request) {
 }
 
 export const handler = resolver.getDefinitions();
+
+export const cleanup = async ({context}) => {
+    console.log('Cleaning');
+    try {
+        await clearAll();
+    } catch (error) {
+        console.warn(`Exception while cleaning: ${error}`);
+    }
+}

@@ -17,9 +17,15 @@ modules:
       resolver:
         function: resolver
       actionType: dynamic
+  scheduledTrigger:
+    - key: cleanup-trigger
+      function: cleanup
+      interval: week
   function:
     - key: resolver
       handler: index.handler
+    - key: cleanup
+      handler: index.cleanup
 resources:
   - key: main
     path: src/frontend/index.jsx
