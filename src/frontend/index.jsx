@@ -28,6 +28,10 @@ const App = () => {
         invoke('generateProphecy', context).then(setProphecy);
     };
 
+    const clearProphecyBtnClicked = () => {
+        invoke('clearProphecyContext', context).then( );
+    };
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
     };
@@ -50,6 +54,7 @@ const App = () => {
                     </ModalBody>
                     <ModalFooter>
                         <ButtonGroup>
+                            <Button onClick={clearProphecyBtnClicked}>Clear</Button>
                             <Button onClick={generateProphecyBtnClicked} iconBefore="premium">Next</Button>
                             <Button onClick={handleCloseModal}>Close</Button>
                         </ButtonGroup>
