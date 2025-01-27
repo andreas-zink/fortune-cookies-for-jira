@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
 import {getAppContext} from "@forge/api";
-import {clearAll, clearProphecyContext, loadProphecyContext,} from './ProphecyContext';
+import {clearAll, clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
 import {newProphecy} from "./ProphecyGenerator";
 
 const resolver = new Resolver();

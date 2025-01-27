@@ -2,12 +2,6 @@ import {storage} from "@forge/api";
 
 const prophecyLimit = 100;
 
-function getLocalDateEpochMillis() {
-    let date = new Date();
-    date.setHours(0, 0, 0, 0);
-    return date.getTime();
-}
-
 export function loadProphecyContext(projectKey) {
     return storage.get(getProphecyStoragekey(projectKey));
 }
@@ -80,4 +74,10 @@ export function resetCounterOnNextDay(context) {
 
 export function exceededLimit(context) {
     return context.counter >= prophecyLimit;
+}
+
+function getLocalDateEpochMillis() {
+    let date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date.getTime();
 }

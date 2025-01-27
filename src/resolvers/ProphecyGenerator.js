@@ -5,7 +5,7 @@ import {
     resetCounterOnNextDay,
     setProphecyInContext,
     storeProphecyContext
-} from "./ProphecyContext";
+} from "./ProphecyStore";
 import {getProjectMetrics} from "./ProjectAnalyzer";
 import {chat} from "./OpenAiClient";
 
