@@ -59,8 +59,8 @@ const App = () => {
                                 {isDevEnv && (
                                     <Button onClick={resetBtnClicked} type='reset' appearance='warning'>Reset</Button>
                                 )}
-                                <Button onClick={generateProphecyBtnClicked} iconBefore="premium">Next</Button>
-                                <Button onClick={handleCloseModal}>Close</Button>
+                                <Button onClick={generateProphecyBtnClicked} type='submit' iconBefore="premium">Next</Button>
+                                <Button onClick={handleCloseModal} autoFocus='true'>Close</Button>
                             </ButtonGroup>
                         </ModalFooter>
                     </Modal>
