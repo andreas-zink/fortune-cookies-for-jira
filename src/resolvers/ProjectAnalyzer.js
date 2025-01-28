@@ -3,18 +3,27 @@ import {storage} from "@forge/api";
 
 export async function getProjectMetrics(projectKey) {
     let projectMetrics = await storage.get(getStorageKey(projectKey));
-    if (!projectMetrics || projectMetrics?.timestamp < getLocalDateHourEpochMillis()) {
-        console.log(`Collecting metrics for project ${projectKey}`)
-        const project = await getProject(projectKey);
-        projectMetrics = {
-            projectKey,
-            projectType: project?.projectTypeKey,
-            timestamp: getLocalDateHourEpochMillis(),
-            issueTypeMetrics: await getIssueTypeMetrics(projectKey, project),
-        };
-        console.log(`Collected project metrics: ${JSON.stringify(projectMetrics, null, 2)}`);
+    if (!projectMetrics || isOutdated(projectMetrics)) {
+        projectMetrics = await buildProjectMetrics(projectKey);
         await storage.set(getStorageKey(projectKey), projectMetrics);
     }
+    return projectMetrics;
+}
+
+function isOutdated(projectMetrics) {
+    return projectMetrics?.timestamp < getLocalHourEpochMillis();
+}
+
+async function buildProjectMetrics(projectKey) {
+    console.log(`Collecting metrics for project ${projectKey}`)
+    const project = await getProject(projectKey);
+    const projectMetrics = {
+        projectKey,
+        projectType: project?.projectTypeKey,
+        timestamp: getLocalHourEpochMillis(),
+        issueTypeMetrics: await getIssueTypeMetrics(projectKey, project),
+    };
+    console.log(`Collected project metrics: ${JSON.stringify(projectMetrics, null, 2)}`);
     return projectMetrics;
 }
 
@@ -55,7 +64,7 @@ async function getIssueTypeCountByStatus(projectKey, issueType) {
     };
 }
 
-function getLocalDateHourEpochMillis() {
+function getLocalHourEpochMillis() {
     let date = new Date();
     date.setMinutes(0, 0, 0);
     return date.getTime();

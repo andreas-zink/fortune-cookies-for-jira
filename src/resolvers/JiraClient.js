@@ -1,7 +1,6 @@
 import api, {route} from "@forge/api";
 
 export async function getProject(projectKey) {
-    // TODO cache?
     return await api.asApp().requestJira(route`/rest/api/3/project/${projectKey}`, {
         headers: {
             'Accept': 'application/json'
