@@ -1,1 +1,1 @@
-export { handler, cleanup } from './resolvers';
+export { handler, cleanup } from './resolvers/Resolver';
