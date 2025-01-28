@@ -1,16 +1,16 @@
 import {storage} from "@forge/api";
 
 export async function loadProphecyContext(projectKey) {
-    return await storage.get(getProphecyStoragekey(projectKey)) ?? newProphecyContext();
+    return await storage.get(getStorageKey(projectKey)) ?? newProphecyContext();
 }
 
 export function storeProphecyContext(projectKey, prophecyContext) {
-    return storage.set(getProphecyStoragekey(projectKey), prophecyContext);
+    return storage.set(getStorageKey(projectKey), prophecyContext);
 }
 
 export function updateProphecyContext(projectKey, prophecyContext, prophecy) {
     setProphecy(prophecyContext, prophecy);
-    return storage.set(getProphecyStoragekey(projectKey), prophecyContext);
+    return storage.set(getStorageKey(projectKey), prophecyContext);
 }
 
 function setProphecy(context, prophecy) {
@@ -23,7 +23,7 @@ function setProphecy(context, prophecy) {
 }
 
 export function clearProphecyContext(projectKey) {
-    return storage.delete(getProphecyStoragekey(projectKey));
+    return storage.delete(getStorageKey(projectKey));
 }
 
 export async function clearAll() {
@@ -62,7 +62,7 @@ function queryStorge(cursor) {
     return queryBuilder.getMany();
 }
 
-function getProphecyStoragekey(projectKey) {
+function getStorageKey(projectKey) {
     return `${projectKey}-prophecy`;
 }
 

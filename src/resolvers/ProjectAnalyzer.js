@@ -1,15 +1,20 @@
 import {getApproximateIssueCount, getProject} from "./JiraClient";
+import {storage} from "@forge/api";
 
 export async function getProjectMetrics(projectKey) {
-    console.log(`Collecting metrics for project ${projectKey}`)
-    const project = await getProject(projectKey);
-    //console.log(project);
-    const projectMetrics = {
-        projectKey,
-        projectType: project?.projectTypeKey,
-        issueTypeMetrics: await getIssueTypeMetrics(projectKey, project),
-    };
-    console.log(`Collected project metrics: ${JSON.stringify(projectMetrics, null, 2)}`);
+    let projectMetrics = await storage.get(getStorageKey(projectKey));
+    if (!projectMetrics || projectMetrics?.timestamp < getLocalDateHourEpochMillis()) {
+        console.log(`Collecting metrics for project ${projectKey}`)
+        const project = await getProject(projectKey);
+        projectMetrics = {
+            projectKey,
+            projectType: project?.projectTypeKey,
+            timestamp: getLocalDateHourEpochMillis(),
+            issueTypeMetrics: await getIssueTypeMetrics(projectKey, project),
+        };
+        console.log(`Collected project metrics: ${JSON.stringify(projectMetrics, null, 2)}`);
+        await storage.set(getStorageKey(projectKey), projectMetrics);
+    }
     return projectMetrics;
 }
 
@@ -48,4 +53,14 @@ async function getIssueTypeCountByStatus(projectKey, issueType) {
         inProgress,
         done,
     };
+}
+
+function getLocalDateHourEpochMillis() {
+    let date = new Date();
+    date.setMinutes(0, 0, 0);
+    return date.getTime();
+}
+
+function getStorageKey(projectKey) {
+    return `${projectKey}-metrics`;
 }

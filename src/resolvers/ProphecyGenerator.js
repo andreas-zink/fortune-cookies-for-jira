@@ -62,7 +62,7 @@ async function requestProphecy(projectMetrics, prophecyHistory) {
 }
 
 function enrichProjectMetrics(projectMetrics) {
-    projectMetrics.requestTimestamp = new Date().toISOString();
+    projectMetrics.timestamp = new Date().toISOString();
 }
 
 function enrichMessagesWithHistory(messages, prophecyHistory) {
