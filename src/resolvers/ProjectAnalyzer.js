@@ -1,13 +1,17 @@
 import {getApproximateIssueCount, getProject} from "./JiraClient";
 import {storage} from "@forge/api";
 
-export async function getProjectMetrics(projectKey) {
-    let projectMetrics = await storage.get(getStorageKey(projectKey));
-    if (!projectMetrics || isOutdated(projectMetrics)) {
-        projectMetrics = await buildProjectMetrics(projectKey);
-        await storage.set(getStorageKey(projectKey), projectMetrics);
+export async function loadProjectMetrics(projectKey) {
+    try {
+        let projectMetrics = await storage.get(getStorageKey(projectKey));
+        if (!projectMetrics || isOutdated(projectMetrics)) {
+            projectMetrics = await buildProjectMetrics(projectKey);
+            await storage.set(getStorageKey(projectKey), projectMetrics);
+        }
+        return projectMetrics;
+    } catch (e) {
+        console.error(`Failed to load project metrics for ${projectKey}: ${e}`);
     }
-    return projectMetrics;
 }
 
 function isOutdated(projectMetrics) {

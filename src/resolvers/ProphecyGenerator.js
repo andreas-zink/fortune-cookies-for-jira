@@ -1,10 +1,10 @@
 import {loadProphecyContext, resetProphecyContextOnNextDay, updateProphecyContext} from "./ProphecyStore";
-import {getProjectMetrics} from "./ProjectAnalyzer";
+import {loadProjectMetrics} from "./ProjectAnalyzer";
 import {chat} from "./OpenAiClient";
 
 const prophecyLimit = 25;
 const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
-const errorProphecy = `"Oops! Something went wrong with your fortune today. But fear not — every setback is a setup for a comeback."`
+export const errorProphecy = `"Oops! Something went wrong with your fortune today. But fear not — every setback is a setup for a comeback."`
 
 export async function generateProphecy(projectKey) {
     try {
@@ -15,7 +15,7 @@ export async function generateProphecy(projectKey) {
             console.log(`Won't generate new prophecies for ${projectKey} until tomorrow`);
             return limitReachedProphecy;
         } else {
-            const projectMetrics = await getProjectMetrics(projectKey);
+            const projectMetrics = await loadProjectMetrics(projectKey);
             const prophecy = await requestProphecy(projectMetrics, prophecyContext.history);
             if (!prophecy) {
                 return errorProphecy;
@@ -23,8 +23,8 @@ export async function generateProphecy(projectKey) {
             await updateProphecyContext(projectKey, prophecyContext, prophecy);
             return prophecy;
         }
-    } catch (error) {
-        console.warn(`Exception while generating new prophecy: ${error}`);
+    } catch (e) {
+        console.error(`Failed to generate prophecy for ${projectKey}: ${e}`);
         return errorProphecy;
     }
 }

@@ -1,34 +1,51 @@
 import Resolver from '@forge/resolver';
 import {getAppContext} from "@forge/api";
 import {clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
-import {generateProphecy} from "./ProphecyGenerator";
+import {errorProphecy, generateProphecy} from "./ProphecyGenerator";
 import {clearAllKeys} from "./StorageCleaner";
 
 const resolver = new Resolver();
 
 resolver.define('getProphecy', async (request) => {
-    // console.log(request);
-    const projectKey = getProjectKeyFromRequest(request);
-    const prophecyContext = await loadProphecyContext(projectKey);
-    if (prophecyContext?.prophecy) {
-        return prophecyContext.prophecy;
+    try {
+        const projectKey = getProjectKeyFromRequest(request);
+        const prophecyContext = await loadProphecyContext(projectKey);
+        if (prophecyContext?.prophecy) {
+            return prophecyContext.prophecy;
+        }
+        return await generateProphecy(projectKey);
+    } catch (e) {
+        console.error(`Failed to get current prophecy: ${e}`);
+        return errorProphecy;
     }
-    return await generateProphecy(projectKey);
 });
 
 resolver.define('getNextProphecy', async (request) => {
-    // console.log(request);
-    const projectKey = getProjectKeyFromRequest(request);
-    return generateProphecy(projectKey);
+    try {
+        const projectKey = getProjectKeyFromRequest(request);
+        return generateProphecy(projectKey);
+    } catch (e) {
+        console.error(`Failed to get next prophecy: ${e}`);
+        return errorProphecy;
+    }
 });
 
 resolver.define('reset', async (request) => {
-    const projectKey = getProjectKeyFromRequest(request);
-    await clearProphecyContext(projectKey);
+    try {
+        const projectKey = getProjectKeyFromRequest(request);
+        await clearProphecyContext(projectKey);
+    } catch (e) {
+        console.error(`Failed to reset prophecy: ${e}`);
+    }
 });
 
 resolver.define('isDevEnv', async () => {
-    return getAppContext()?.environmentType === 'DEVELOPMENT';
+    try {
+        return getAppContext()?.environmentType === 'DEVELOPMENT';
+    } catch (e) {
+        console.error(`Failed to resolve environment type: ${e}`);
+        return false;
+    }
 });
 
 function getProjectKeyFromRequest(request) {
@@ -38,10 +55,10 @@ function getProjectKeyFromRequest(request) {
 export const handler = resolver.getDefinitions();
 
 export const cleanup = async ({context}) => {
-    console.log('Triggered weekly cleanup');
     try {
+        console.log('Triggered weekly cleanup');
         await clearAllKeys();
-    } catch (error) {
-        console.warn(`Exception while cleanup: ${error}`);
+    } catch (e) {
+        console.warn(`Failed to cleanup: ${e}`);
     }
 }
