@@ -3,19 +3,15 @@ import {getProjectMetrics} from "./ProjectAnalyzer";
 import {chat} from "./OpenAiClient";
 
 const prophecyLimit = 25;
-const inactiveLicenseProphecy = `"Your fortune remains locked behind the door of opportunity. To unlock the wisdom of the cookie, activate your license.`
 const limitReachedProphecy = `"Today's fortune has been fulfilled — your daily limit has been reached. Remember, patience is a virtue, and tomorrow brings new opportunities."`
 const errorProphecy = `"Oops! Something went wrong with your fortune today. But fear not — every setback is a setup for a comeback."`
 
-export async function generateProphecy(projectKey, activeLicense) {
+export async function generateProphecy(projectKey) {
     try {
         const prophecyContext = await loadProphecyContext(projectKey);
         resetProphecyContextOnNextDay(prophecyContext);
 
-        if (!activeLicense) {
-            console.log("Won't generate any prophecies without active license");
-            return inactiveLicenseProphecy;
-        } else if (isCounterExhausted(prophecyContext)) {
+        if (isCounterExhausted(prophecyContext)) {
             console.log(`Won't generate new prophecies for ${projectKey} until tomorrow`);
             return limitReachedProphecy;
         } else {
