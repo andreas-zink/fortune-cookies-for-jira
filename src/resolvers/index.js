@@ -1,7 +1,8 @@
 import Resolver from '@forge/resolver';
 import {getAppContext} from "@forge/api";
-import {clearAll, clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
+import {clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
 import {generateProphecy} from "./ProphecyGenerator";
+import {clearAllKeys} from "./StorageCleaner";
 
 const resolver = new Resolver();
 
@@ -46,7 +47,7 @@ export const handler = resolver.getDefinitions();
 export const cleanup = async ({context}) => {
     console.log('Triggered weekly cleanup');
     try {
-        await clearAll();
+        await clearAllKeys();
     } catch (error) {
         console.warn(`Exception while cleanup: ${error}`);
     }

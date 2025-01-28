@@ -26,25 +26,6 @@ export function clearProphecyContext(projectKey) {
     return storage.delete(getStorageKey(projectKey));
 }
 
-export async function clearAll() {
-    console.log("Clearing prophecy contexts")
-    const keys = [];
-    await queryStorge(null).then(listResult => {
-        listResult.results.forEach(entry => keys.push(entry.key));
-        if (listResult.nextCursor) {
-            return queryStorge(listResult.nextCursor);
-        } else {
-            return Promise.resolve();
-        }
-    });
-
-    const promises = keys.map(key => {
-        console.log(`Deleting ${key}`);
-        return storage.delete(key);
-    });
-    await Promise.all(promises);
-}
-
 export function resetProphecyContextOnNextDay(context) {
     const today = getLocalDateEpochMillis();
     if (context.timestamp < today) {
@@ -52,14 +33,6 @@ export function resetProphecyContextOnNextDay(context) {
         context.timestamp = today;
         context.counter = 0;
     }
-}
-
-function queryStorge(cursor) {
-    const queryBuilder = storage.query();
-    if (cursor) {
-        queryBuilder.cursor(cursor);
-    }
-    return queryBuilder.getMany();
 }
 
 function getStorageKey(projectKey) {
