@@ -6,9 +6,9 @@ import {clearAllKeys} from "./StorageCleaner";
 
 const resolver = new Resolver();
 
-resolver.define('getProphecy', async (request) => {
+resolver.define('getProphecy', async ({context}) => {
     try {
-        const projectKey = getProjectKeyFromRequest(request);
+        const projectKey = getProjectKey(context);
         const prophecyContext = await loadProphecyContext(projectKey);
         if (prophecyContext?.prophecy) {
             return prophecyContext.prophecy;
@@ -20,9 +20,9 @@ resolver.define('getProphecy', async (request) => {
     }
 });
 
-resolver.define('getNextProphecy', async (request) => {
+resolver.define('getNextProphecy', async ({context}) => {
     try {
-        const projectKey = getProjectKeyFromRequest(request);
+        const projectKey = getProjectKey(context);
         return generateProphecy(projectKey);
     } catch (e) {
         console.error(`Failed to get next prophecy: ${e}`);
@@ -30,9 +30,9 @@ resolver.define('getNextProphecy', async (request) => {
     }
 });
 
-resolver.define('reset', async (request) => {
+resolver.define('reset', async ({context}) => {
     try {
-        const projectKey = getProjectKeyFromRequest(request);
+        const projectKey = getProjectKey(context);
         await clearProphecyContext(projectKey);
     } catch (e) {
         console.error(`Failed to reset prophecy: ${e}`);
@@ -48,13 +48,13 @@ resolver.define('isDevEnv', async () => {
     }
 });
 
-function getProjectKeyFromRequest(request) {
-    return request?.context?.extension?.project?.key;
+function getProjectKey(context) {
+    return context?.extension?.project?.key;
 }
 
 export const handler = resolver.getDefinitions();
 
-export const cleanup = async ({context}) => {
+export const cleanup = async () => {
     try {
         console.log('Triggered weekly cleanup');
         await clearAllKeys();

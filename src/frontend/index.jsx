@@ -1,37 +1,39 @@
 import React, {useEffect, useState} from 'react';
 import ForgeReconciler, {
-    useProductContext,
     Button,
     ButtonGroup,
-    Em, Inline,
+    Em,
+    Inline,
     Modal,
     ModalBody,
     ModalFooter,
     ModalHeader,
     ModalTitle,
-    ModalTransition, Spinner,
+    ModalTransition,
+    Spinner,
     Text,
 } from '@forge/react';
 import {invoke, view} from '@forge/bridge';
 
 const App = () => {
-    const context = useProductContext();
     const [isModalOpen, setIsModalOpen] = useState(true);
     const [prophecy, setProphecy] = useState(null);
     const [isDevEnv, setIsDevEnv] = useState(false);
 
     useEffect(() => {
-        invoke('getProphecy', context).then(setProphecy);
+        invoke('getProphecy').then(setProphecy);
+    }, []);
+    useEffect(() => {
         invoke('isDevEnv').then(setIsDevEnv);
-    }, [context]);
+    }, []);
 
     const getNextProphecyBtnClicked = () => {
         setProphecy(null);
-        invoke('getNextProphecy', context).then(setProphecy);
+        invoke('getNextProphecy').then(setProphecy);
     };
 
     const resetBtnClicked = () => {
-        invoke('reset', context).then();
+        invoke('reset').then();
     };
 
     const handleCloseModal = () => {
@@ -59,7 +61,8 @@ const App = () => {
                                 {isDevEnv && (
                                     <Button onClick={resetBtnClicked} type='reset' appearance='warning'>Reset</Button>
                                 )}
-                                <Button onClick={getNextProphecyBtnClicked} type='submit' iconBefore="premium">Next</Button>
+                                <Button onClick={getNextProphecyBtnClicked} type='submit'
+                                        iconBefore="premium">Next</Button>
                                 <Button onClick={handleCloseModal} autoFocus='true'>Close</Button>
                             </ButtonGroup>
                         </ModalFooter>
