@@ -1,28 +1,43 @@
-import {storage} from "@forge/api";
+import {startsWith, storage} from "@forge/api";
+
+export async function clearProjectKeys(projectKey) {
+    console.log(`Clearing storage keys for project ${projectKey}`);
+    await deleteAllKeys(projectKey);
+}
 
 export async function clearAllKeys() {
     console.log("Clearing all storage keys")
-    const keys = [];
-    await queryStorge(null).then(listResult => {
-        listResult.results.forEach(entry => keys.push(entry.key));
-        if (listResult.nextCursor) {
-            return queryStorge(listResult.nextCursor);
-        } else {
-            return Promise.resolve();
-        }
-    });
+    await deleteAllKeys(null);
+}
 
-    const promises = keys.map(key => {
-        console.log(`Deleting ${key}`);
-        return storage.delete(key);
-    });
+async function deleteAllKeys(keyPrefix) {
+    const keys = await queryAllKeys(keyPrefix, null);
+    const promises = keys.map(key => storage.delete(key)
+        .then(v => console.log(`Deleted storage key ${key}`)));
     await Promise.all(promises);
 }
 
-function queryStorge(cursor) {
-    const queryBuilder = storage.query();
+async function queryAllKeys(keyPrefix, cursor) {
+    return await query(keyPrefix, cursor).then(async listResult => {
+        const keys = listResult.results
+            .map(entry => entry.key);
+        if (listResult.nextCursor) {
+            const nextKeys = await queryAllKeys(keyPrefix, listResult.nextCursor);
+            if (nextKeys && nextKeys.length > 0) {
+                keys.push(...nextKeys);
+            }
+        }
+        return keys;
+    });
+}
+
+function query(keyPrefix, cursor) {
+    let queryBuilder = storage.query();
+    if (keyPrefix) {
+        queryBuilder = queryBuilder.where('key', startsWith(keyPrefix));
+    }
     if (cursor) {
-        queryBuilder.cursor(cursor);
+        queryBuilder = queryBuilder.cursor(cursor);
     }
     return queryBuilder.getMany();
 }

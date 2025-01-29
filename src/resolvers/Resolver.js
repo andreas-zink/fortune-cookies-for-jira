@@ -1,8 +1,8 @@
 import Resolver from '@forge/resolver';
 import {getAppContext} from "@forge/api";
-import {clearProphecyContext, loadProphecyContext,} from './ProphecyStore';
+import {loadProphecyContext,} from './ProphecyStore';
 import {errorProphecy, generateProphecy} from "./ProphecyGenerator";
-import {clearAllKeys} from "./StorageCleaner";
+import {clearAllKeys, clearProjectKeys} from "./StorageCleaner";
 
 const resolver = new Resolver();
 
@@ -30,23 +30,39 @@ resolver.define('getNextProphecy', async ({context}) => {
     }
 });
 
-resolver.define('reset', async ({context}) => {
+resolver.define('resetProject', async ({context}) => {
     try {
-        const projectKey = getProjectKey(context);
-        await clearProphecyContext(projectKey);
+        if (isDevEnv()) {
+            const projectKey = getProjectKey(context);
+            await clearProjectKeys(projectKey);
+        }
     } catch (e) {
-        console.error(`Failed to reset prophecy: ${e}`);
+        console.error(`Failed to reset project: ${e}`);
+    }
+});
+
+resolver.define('resetAllProjects', async () => {
+    try {
+        if (isDevEnv()) {
+            await clearAllKeys();
+        }
+    } catch (e) {
+        console.error(`Failed to reset all projects: ${e}`);
     }
 });
 
 resolver.define('isDevEnv', async () => {
     try {
-        return getAppContext()?.environmentType === 'DEVELOPMENT';
+        return isDevEnv();
     } catch (e) {
         console.error(`Failed to resolve environment type: ${e}`);
         return false;
     }
 });
+
+function isDevEnv() {
+    return getAppContext()?.environmentType === 'DEVELOPMENT';
+}
 
 function getProjectKey(context) {
     return context?.extension?.project?.key;

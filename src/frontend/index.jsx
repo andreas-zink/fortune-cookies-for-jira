@@ -32,8 +32,11 @@ const App = () => {
         invoke('getNextProphecy').then(setProphecy);
     };
 
-    const resetBtnClicked = () => {
-        invoke('reset').then();
+    const resetProjectBtnClicked = () => {
+        invoke('resetProject').then();
+    };
+    const resetAllBtnClicked = () => {
+        invoke('resetAllProjects').then();
     };
 
     const handleCloseModal = () => {
@@ -57,10 +60,13 @@ const App = () => {
                             </Inline>
                         </ModalBody>
                         <ModalFooter>
+                            {isDevEnv && (
+                                <ButtonGroup>
+                                    <Button onClick={resetProjectBtnClicked} appearance='warning'>Reset Project</Button>
+                                    <Button onClick={resetAllBtnClicked} appearance='warning'>Reset All</Button>
+                                </ButtonGroup>
+                            )}
                             <ButtonGroup>
-                                {isDevEnv && (
-                                    <Button onClick={resetBtnClicked} type='reset' appearance='warning'>Reset</Button>
-                                )}
                                 <Button onClick={getNextProphecyBtnClicked} type='submit'
                                         iconBefore="premium">Next</Button>
                                 <Button onClick={handleCloseModal} autoFocus='true'>Close</Button>

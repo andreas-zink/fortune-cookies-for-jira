@@ -22,10 +22,6 @@ function setProphecy(context, prophecy) {
     context.counter++;
 }
 
-export function clearProphecyContext(projectKey) {
-    return storage.delete(getStorageKey(projectKey));
-}
-
 export function resetProphecyContextOnNextDay(context) {
     const today = getLocalDateEpochMillis();
     if (context.timestamp < today) {
