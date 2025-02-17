@@ -14,6 +14,7 @@ import ForgeReconciler, {
     Text,
 } from '@forge/react';
 import {invoke, view} from '@forge/bridge';
+import {Logo} from "./Logo";
 
 const App = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
@@ -49,7 +50,10 @@ const App = () => {
                 {isModalOpen && (
                     <Modal shouldScrollInViewport="false" onClose={() => view.close()}>
                         <ModalHeader>
-                            <ModalTitle>Your project prophecy</ModalTitle>
+                            <Inline alignBlock="center" space="space.050">
+                                <Logo width="20px"/>
+                                <ModalTitle>Your project prophecy</ModalTitle>
+                            </Inline>
                         </ModalHeader>
                         <ModalBody>
                             <Inline>
@@ -67,9 +71,9 @@ const App = () => {
                                 </ButtonGroup>
                             )}
                             <ButtonGroup>
-                                <Button onClick={getNextProphecyBtnClicked} type='submit'
-                                        iconBefore="premium">Next</Button>
                                 <Button onClick={handleCloseModal} autoFocus='true'>Close</Button>
+                                <Button onClick={getNextProphecyBtnClicked} type='submit'
+                                        appearance='primary'>Regenerate</Button>
                             </ButtonGroup>
                         </ModalFooter>
                     </Modal>
