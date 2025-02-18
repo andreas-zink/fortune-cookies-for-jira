@@ -2,7 +2,7 @@ modules:
   jira:backlogAction:
     - key: fortune-cookie-backlog-action
       title: Open fortune cookie
-      icon: resource:svgs;fortune-cookie.svg
+      icon: resource:images;fortune-cookie.svg
       resource: main
       render: native
       resolver:
@@ -11,7 +11,7 @@ modules:
   jira:boardAction:
     - key: fortune-cookie-board-action
       title: Open fortune cookie
-      icon: resource:svgs;fortune-cookie.svg
+      icon: resource:images;fortune-cookie.svg
       resource: main
       render: native
       resolver:
@@ -29,8 +29,8 @@ modules:
 resources:
   - key: main
     path: src/frontend/index.jsx
-  - key: svgs
-    path: src/resources/svgs
+  - key: images
+    path: src/resources/images
 app:
   runtime:
     name: nodejs22.x

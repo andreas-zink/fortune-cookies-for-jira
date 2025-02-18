@@ -3,6 +3,7 @@ import ForgeReconciler, {
     Button,
     ButtonGroup,
     Em,
+    Image,
     Inline,
     Modal,
     ModalBody,
@@ -14,7 +15,7 @@ import ForgeReconciler, {
     Text,
 } from '@forge/react';
 import {invoke, view} from '@forge/bridge';
-import {Logo} from "./Logo";
+import logo from '../resources/images/fortune-cookie.svg'
 
 const App = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
@@ -51,7 +52,7 @@ const App = () => {
                     <Modal shouldScrollInViewport="false" onClose={() => view.close()}>
                         <ModalHeader>
                             <Inline alignBlock="center" space="space.050">
-                                <Logo width="20px"/>
+                                <Image width="20px" src={logo} alt=""/>
                                 <ModalTitle>Your project prophecy</ModalTitle>
                             </Inline>
                         </ModalHeader>
